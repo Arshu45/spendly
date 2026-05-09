@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def get_db():
@@ -79,6 +79,15 @@ def get_user_by_email(email):
     conn = get_db()
     row = conn.execute(
         "SELECT * FROM users WHERE email = ?", (email,)
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def get_user_by_id(user_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM users WHERE id = ?", (user_id,)
     ).fetchone()
     conn.close()
     return row

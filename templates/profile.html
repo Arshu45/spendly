@@ -22,7 +22,7 @@
           </p>
           <p class="profile-since">
             <i data-lucide="calendar"></i>
-            Member since {{ user.created_at }}
+            Member since {{ user.member_since }}
           </p>
         </div>
       </div>
@@ -71,7 +71,7 @@
                     {{ tx.category | capitalize }}
                   </span>
                 </td>
-                <td class="amount-col">${{ tx.amount }}</td>
+                <td class="amount-col">₹{{ tx.amount }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -89,7 +89,7 @@
           <div class="cat-row">
             <div class="cat-header">
               <span class="cat-name">{{ cat.name }}</span>
-              <span class="cat-amount">${{ cat.amount }}</span>
+              <span class="cat-amount">₹{{ cat.amount }}</span>
             </div>
             <div class="cat-bar-track">
               <div class="cat-bar cat-bar-{{ cat.slug }}" style="width: {{ cat.pct }}%"></div>

@@ -1,5 +1,11 @@
 from flask import Flask, render_template, request, session, redirect, url_for, abort
-from database.db import get_db, init_db, seed_db, get_user_by_email, get_user_by_id, create_user
+from database.db import get_db, init_db, seed_db, get_user_by_email, create_user
+from database.queries import (
+    get_user_by_id,
+    get_summary_stats,
+    get_recent_transactions,
+    get_category_breakdown,
+)
 from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
@@ -105,39 +111,20 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    user = {
-        "name":       "Alex Johnson",
-        "email":      "alex@example.com",
-        "created_at": "January 2024",
-    }
+    uid  = session["user_id"]
+    user = get_user_by_id(uid)
+    s    = get_summary_stats(uid)
     stats = [
-        {"label": "Total Spent",  "value": "$4,250.00", "icon": "credit-card"},
-        {"label": "Transactions", "value": "24",        "icon": "receipt"},
-        {"label": "Top Category", "value": "Food",      "icon": "tag"},
-    ]
-    transactions = [
-        {"date": "May 20, 2026", "description": "Groceries",        "category": "food",          "amount": "22.75"},
-        {"date": "May 15, 2026", "description": "New shoes",         "category": "shopping",      "amount": "89.99"},
-        {"date": "May 10, 2026", "description": "Movie tickets",     "category": "entertainment", "amount": "25.00"},
-        {"date": "May  8, 2026", "description": "Pharmacy",          "category": "health",        "amount": "35.00"},
-        {"date": "May  5, 2026", "description": "Electricity bill",  "category": "bills",         "amount": "120.00"},
-        {"date": "May  3, 2026", "description": "Monthly bus pass",  "category": "transport",     "amount": "45.00"},
-        {"date": "May  1, 2026", "description": "Lunch at cafe",     "category": "food",          "amount": "12.50"},
-    ]
-    categories = [
-        {"name": "Bills",         "slug": "bills",         "amount": "120.00", "pct": 68},
-        {"name": "Shopping",      "slug": "shopping",      "amount": "89.99",  "pct": 51},
-        {"name": "Transport",     "slug": "transport",     "amount": "45.00",  "pct": 25},
-        {"name": "Health",        "slug": "health",        "amount": "35.00",  "pct": 20},
-        {"name": "Food",          "slug": "food",          "amount": "35.25",  "pct": 20},
-        {"name": "Entertainment", "slug": "entertainment", "amount": "25.00",  "pct": 14},
+        {"label": "Total Spent",  "value": f"₹{s['total_spent']:,.2f}", "icon": "credit-card"},
+        {"label": "Transactions", "value": str(s["transaction_count"]),  "icon": "receipt"},
+        {"label": "Top Category", "value": s["top_category"],            "icon": "tag"},
     ]
     return render_template(
         "profile.html",
         user=user,
         stats=stats,
-        transactions=transactions,
-        categories=categories,
+        transactions=get_recent_transactions(uid),
+        categories=get_category_breakdown(uid),
     )
 
 

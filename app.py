@@ -7,6 +7,8 @@ from database.queries import (
     get_category_breakdown,
 )
 from werkzeug.security import check_password_hash
+from datetime import date, datetime
+import calendar
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-change-in-prod"
@@ -113,7 +115,26 @@ def profile():
 
     uid  = session["user_id"]
     user = get_user_by_id(uid)
-    s    = get_summary_stats(uid)
+
+    raw_from = request.args.get("from", "")
+    raw_to   = request.args.get("to",   "")
+    try:
+        date_from = datetime.strptime(raw_from, "%Y-%m-%d").date()
+        date_to   = datetime.strptime(raw_to,   "%Y-%m-%d").date()
+    except ValueError:
+        date_from = None
+        date_to   = None
+
+    if date_from is None or date_to is None:
+        today     = date.today()
+        date_from = today.replace(day=1)
+        last_day  = calendar.monthrange(today.year, today.month)[1]
+        date_to   = today.replace(day=last_day)
+
+    df_str = date_from.isoformat()
+    dt_str = date_to.isoformat()
+
+    s = get_summary_stats(uid, df_str, dt_str)
     stats = [
         {"label": "Total Spent",  "value": f"₹{s['total_spent']:,.2f}", "icon": "credit-card"},
         {"label": "Transactions", "value": str(s["transaction_count"]),  "icon": "receipt"},
@@ -123,8 +144,10 @@ def profile():
         "profile.html",
         user=user,
         stats=stats,
-        transactions=get_recent_transactions(uid),
-        categories=get_category_breakdown(uid),
+        transactions=get_recent_transactions(uid, df_str, dt_str),
+        categories=get_category_breakdown(uid, df_str, dt_str),
+        date_from=df_str,
+        date_to=dt_str,
     )
 
 

@@ -28,6 +28,21 @@
       </div>
     </div>
 
+    {# ── Date range filter ── #}
+    <form class="filter-form" method="GET" action="">
+      <div class="filter-fields">
+        <div class="form-group">
+          <label for="filter-from">From</label>
+          <input class="form-input" type="date" id="filter-from" name="from" value="{{ date_from }}">
+        </div>
+        <div class="form-group">
+          <label for="filter-to">To</label>
+          <input class="form-input" type="date" id="filter-to" name="to" value="{{ date_to }}">
+        </div>
+        <button type="submit" class="btn-primary filter-btn">Filter</button>
+      </div>
+    </form>
+
     {# ── Stats row ── #}
     <div class="stats-row">
       {% for stat in stats %}
